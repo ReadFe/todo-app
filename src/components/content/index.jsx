@@ -7,6 +7,7 @@ const Content = () => {
     const [data, setData] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [errInput, setErrInput] = useState('')
 
 
     // Content
@@ -15,7 +16,7 @@ const Content = () => {
     }, [])
 
     const getData = () => {
-        axios.get('http://localhost:3000/data')
+        axios.get('http://localhost:3001/data/task')
         .then(response => {
           setData(response.data);
         })
@@ -24,8 +25,8 @@ const Content = () => {
         });
     }
 
-    const statusChange = (value, id) => {
-        axios.put(`http://localhost:3000/data/put/${id}`, {done: value}, {
+    const handleUpdate = (value, id) => {
+        axios.put(`http://localhost:3001/data/task/${id}`, {done: value}, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -33,51 +34,63 @@ const Content = () => {
     }
 
     const handleDelete = (value, id) => {
-        axios.delete(`http://localhost:3000/data/delete/${id}`);
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-          }, 500);
+        axios.delete(`http://localhost:3001/data/task/${id}`);
         getData();
+        setLoading(false);
     }
 
 
     // Add 
-    const handlePost = () => {
-        axios.post(`http://localhost:3000/data/post`, {
-            name: input,
-            done: false
-        });
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-          }, 500);
-        getData();
+    const handlePost = async (event) => {
+        try {
+            setErrInput('')
+            if(input === '') {
+                throw new Error('Input tidak boleh kosong')
+            }else if(input.length > 30){
+                throw new Error('Input tidak boleh lebih dari 30 huruf')
+            } else {
+                setLoading(true);
+                await axios.post(`http://localhost:3001/data/task`, {
+                    name: input,
+                    done: false
+                });
+                setInput('')
+                getData();
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1000);
+            }
+        } catch (e) {
+            event.preventDefault();
+            setErrInput(e.message);
+        }
     }
     
 
     return(
         <div>
-            {loading ? <Loading/> : (
+            {!data ? <Loading/> : (
                 <>
                     <div className="main-container">
                         <p className='main-title'>Tasks</p>
                         <div className="content-container">
                             { data.map(item => (
                                 <div className="content-box" key={item._id}>
-                                    <input type="checkbox" defaultChecked={item.done} onChange={ e => statusChange(e.target.checked, item._id)}/>
+                                    <input type="checkbox" defaultChecked={item.done} onChange={ e => handleUpdate(e.target.checked, item._id)}/>
                                     <p className="title"> {item.name} </p>
-                                    <button className='delete' onClick={e => handleDelete(e, item._id)}>X</button>
+                                    <button className={loading ? 'disabled' : 'delete' } onClick={e => handleDelete(e, item._id)}>X</button>
                                 </div>
                             )) }
                         </div>
                     </div>
                     <div className="add-container">
                         <p className='main-title'>New Task</p>
-                        <div className="add-box">
+                        <form onSubmit={handlePost} className="add-box">
                             <input className='add-input' type="text" onChange={e => setInput(e.target.value)}/>
-                            <button className='add-button' onClick={handlePost}>ADD</button>
-                        </div>
+                            { errInput ? <p className='error'> {errInput} </p> : null}
+                            <button className={loading ? 'add-button-disabled'  : 'add-button' } type='submit'>{loading ? 'Loading' : 'ADD' }</button>
+                        </form>
                     </div>
                 </>
             )}
