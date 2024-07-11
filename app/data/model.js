@@ -4,7 +4,8 @@ const {model} = mongoose;
 const dataSchema = mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        maxlength: [30, 'Panjang maksimal hanya 30 karakter']
     },
 
     done: {

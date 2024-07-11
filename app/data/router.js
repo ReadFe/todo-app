@@ -1,10 +1,10 @@
 const router = require('express').Router();
 const dataController = require('./controller')
 
-router.get('/', dataController.index);
-router.post('/post', dataController.store);
-router.put('/put/:id', dataController.update);
-router.delete('/delete/:id', dataController.destroy);
+router.get('/task', dataController.index);
+router.post('/task', dataController.store);
+router.put('/task/:id', dataController.update);
+router.delete('/task/:id', dataController.destroy);
 
 
 module.exports = router;
