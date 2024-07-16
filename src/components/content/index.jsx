@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import './index.css'
 import axios from 'axios';
 import Loading from '../loading';
+import { API_BASE_URL } from '../../configs/config';
+
 
 const Content = () => {
     const [data, setData] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [errInput, setErrInput] = useState('')
+    const [errInput, setErrInput] = useState('');
 
 
     // Content
@@ -16,7 +18,7 @@ const Content = () => {
     }, [])
 
     const getData = () => {
-        axios.get('http://localhost:3001/data/task')
+        axios.get(`${API_BASE_URL}/data/task`)
         .then(response => {
           setData(response.data);
         })
@@ -25,17 +27,17 @@ const Content = () => {
         });
     }
 
-    const handleUpdate = (value, id) => {
-        axios.put(`http://localhost:3001/data/task/${id}`, {done: value}, {
+    const handleUpdate = async (value, id) => {
+        await axios.put(`{${API_BASE_URL}/data/task/${id}`, {done: value}, {
             headers: {
                 'Content-Type': 'application/json'
             }
         });
     }
 
-    const handleDelete = (value, id) => {
+    const handleDelete = async (value, id) => {
         setLoading(true);
-        axios.delete(`http://localhost:3001/data/task/${id}`);
+        await axios.delete(`${API_BASE_URL}/data/task/${id}`);
         getData();
         setLoading(false);
     }
@@ -43,6 +45,7 @@ const Content = () => {
 
     // Add 
     const handlePost = async (event) => {
+        event.preventDefault();
         try {
             setErrInput('')
             if(input === '') {
@@ -51,7 +54,7 @@ const Content = () => {
                 throw new Error('Input tidak boleh lebih dari 30 huruf')
             } else {
                 setLoading(true);
-                await axios.post(`http://localhost:3001/data/task`, {
+                await axios.post(`${API_BASE_URL}/data/task`, {
                     name: input,
                     done: false
                 });
@@ -62,7 +65,6 @@ const Content = () => {
                 }, 1000);
             }
         } catch (e) {
-            event.preventDefault();
             setErrInput(e.message);
         }
     }
@@ -87,7 +89,7 @@ const Content = () => {
                     <div className="add-container">
                         <p className='main-title'>New Task</p>
                         <form onSubmit={handlePost} className="add-box">
-                            <input className='add-input' type="text" onChange={e => setInput(e.target.value)}/>
+                            <input className='add-input' value={input} type="text" onChange={e => setInput(e.target.value)}/>
                             { errInput ? <p className='error'> {errInput} </p> : null}
                             <button className={loading ? 'add-button-disabled'  : 'add-button' } type='submit'>{loading ? 'Loading' : 'ADD' }</button>
                         </form>
