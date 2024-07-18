@@ -28,7 +28,7 @@ const Content = () => {
     }
 
     const handleUpdate = async (value, id) => {
-        await axios.put(`{${API_BASE_URL}/data/task/${id}`, {done: value}, {
+        await axios.put(`${API_BASE_URL}/data/task/${id}`, {done: value}, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -60,9 +60,7 @@ const Content = () => {
                 });
                 setInput('')
                 getData();
-                setTimeout(() => {
-                    setLoading(false);
-                }, 1000);
+                setLoading(false);
             }
         } catch (e) {
             setErrInput(e.message);
